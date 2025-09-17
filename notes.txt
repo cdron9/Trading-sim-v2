@@ -8,3 +8,12 @@ users money depletes based on total order value.
 
 
 add screen states struct and create basic UI
+
+
+
+v0.01 - 
+
+Current state - user can navigate UI and switch between various menus, they can also view a portfolio menu that shares their current 'account' cash amount. 
+                User can see all stocks avaialable to buy and sell but without any action avialable or pricing model yet. 
+
+TODO: complete sell and buy menus with accosiated order handling menu that takes user input and creates Order based on input. 
