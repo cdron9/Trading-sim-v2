@@ -1,0 +1,10 @@
+Trading sim
+
+3 stocks to choose from
+
+user selects what stock to trade and at what quantity and price.
+
+users money depletes based on total order value. 
+
+
+add screen states struct and create basic UI
