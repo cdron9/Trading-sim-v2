@@ -3,11 +3,15 @@
 #include "ui.h"
 #include "stocks.h"
 #include "user.h"
+#include "order.h"
+
+#define MAX_ORDERS 100
 
 int main(void) {
     User user = initialise_user();
     Stock stocks[3];
     initialise_stocks(stocks);
+    Order orders_array[MAX_ORDERS];
     
     int quit = 0;
     
@@ -15,25 +19,41 @@ int main(void) {
         display_main_menu();
         int main_choice = get_user_input();
         
-        switch (main_choice) {
-            case 1: {
+        switch (main_choice) { 
+            case 1: {   // buy menu
                 int buy_quit = 0;
                 while (!buy_quit) {
                     display_buy_menu();
                     int buy_choice = get_user_input();
+                    int new_id = order_getID();
                     
                     switch (buy_choice) {
-                        case 1: break;
-                        case 2: break;
-                        case 3: break;
+                        case 1: orders_array[new_id] = order_create(&stocks[0], new_id); break;
+                        case 2: orders_array[new_id] = order_create(&stocks[1], new_id); break;
+                        case 3: orders_array[new_id] = order_create(&stocks[2], new_id); break;
                         case 4: buy_quit = 1; break;
                         default: printf("Invalid choice\n");
                     }
                 }
                 break;
             }
+
+            printf("%lf", orders_array[0].orderprice);
             
-            case 2: { // sell menu 
+            case 2: { // sell menu
+                int sell_quit = 0;
+                while (!sell_quit) {
+                    display_sell_menu();
+                    int sell_choice = get_user_input();
+
+                    switch (sell_choice) {
+                        case 1: break;
+                        case 2: break;
+                        case 3: break;
+                        case 4: sell_quit = 1; break;
+                        default: printf("Invalid choice\n");
+                    }
+                }
                 break;
             }
             

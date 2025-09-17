@@ -20,8 +20,8 @@ typedef struct {
 
 typedef struct {
     int id;
-    Stock shareprice;
-    Stock ticker;
+    double orderprice;
+    char* ticker;
     double quantity;
 } Order;
 

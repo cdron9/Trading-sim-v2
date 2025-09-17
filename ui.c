@@ -13,7 +13,17 @@ void display_main_menu() {
     printf("1. Create BUY order\n");
     printf("2. Create SELL order\n");
     printf("3. Show portfolio\n");
-    printf("4. QUIT\n");
+    printf("\n4. QUIT\n");
+}
+
+void display_sell_menu() {
+    printf("\033[2J\033[H");
+    printf("\n\n== SELL MENU ==\n\n");
+    printf("Select a stock.\n\n");
+    printf("1. TECH\n");
+    printf("2. GOIL\n");
+    printf("3. FOOD\n");
+    printf("\n4. BACK\n");
 }
 
 void display_buy_menu() {
@@ -23,7 +33,7 @@ void display_buy_menu() {
     printf("1. TECH\n");
     printf("2. GOIL\n");
     printf("3. FOOD\n");
-    printf("4. BACK\n");
+    printf("\n4. BACK\n");
 }
 
 void display_portfolio_menu(User* user) {
