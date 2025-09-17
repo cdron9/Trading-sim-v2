@@ -15,5 +15,12 @@ v0.01 -
 
 Current state - user can navigate UI and switch between various menus, they can also view a portfolio menu that shares their current 'account' cash amount. 
                 User can see all stocks avaialable to buy and sell but without any action avialable or pricing model yet. 
+                User can create an order, stored in an array of type Order which is indexable via the order ID.
 
 TODO: complete sell and buy menus with accosiated order handling menu that takes user input and creates Order based on input. 
+
+
+current state - above += 
+                User can create an order, stored in an array of type Order which is indexable via the order ID.
+
+TODO: refine order menus, properly handle user input and errors associated. handle order type i.e. buy or sell, start working on Orderbook mathcing system. 

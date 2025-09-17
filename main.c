@@ -37,8 +37,6 @@ int main(void) {
                 }
                 break;
             }
-
-            printf("%lf", orders_array[0].orderprice);
             
             case 2: { // sell menu
                 int sell_quit = 0;
