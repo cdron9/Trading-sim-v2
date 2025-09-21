@@ -4,6 +4,7 @@
 #include "stocks.h"
 #include "user.h"
 #include "order.h"
+#include "orderbook.h"
 
 #define MAX_ORDERS 100
 
@@ -12,6 +13,14 @@ int main(void) {
     Stock stocks[3];
     initialise_stocks(stocks);
     Order orders_array[MAX_ORDERS];
+
+    OrderBook orderbooks[3];
+    for (int i = 0; i <= 3; i++) {
+        orderbooks[i].ticker = stocks[i].ticker;
+        orderbooks[i].buy_count = 0;
+        orderbooks[i].sell_count = 0;
+        orderbooks[i].last_price = stocks[i].shareprice; // starts with stock price.
+    }
     
     int quit = 0;
     
