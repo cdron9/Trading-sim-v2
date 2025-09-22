@@ -20,7 +20,12 @@ Current state - user can navigate UI and switch between various menus, they can 
 TODO: complete sell and buy menus with accosiated order handling menu that takes user input and creates Order based on input. 
 
 
-current state - above += 
+current state - above +
                 User can create an order, stored in an array of type Order which is indexable via the order ID.
 
-TODO: refine order menus, properly handle user input and errors associated. handle order type i.e. buy or sell, start working on Orderbook mathcing system. 
+TODO: refine order menus, properly handle user input and errors associated. handle order type i.e. buy or sell, start working on Orderbook matching system. 
+
+
+current state - above + matching engine complete, user can create matching buy and sell orders that will manipualte user.cash; last orderprice stored as well.
+
+TODO: add support for partially filled order across multiple price points, CREATE ORDER COMPLETE SCREEN AND ORDERFILLED SCREEN - IMPORTANT. 

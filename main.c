@@ -37,9 +37,18 @@ int main(void) {
                     int new_id = order_getID();
                     
                     switch (buy_choice) {
-                        case 1: orders_array[new_id] = order_create(&stocks[0], new_id); break;
-                        case 2: orders_array[new_id] = order_create(&stocks[1], new_id); break;
-                        case 3: orders_array[new_id] = order_create(&stocks[2], new_id); break;
+                        case 1: orders_array[new_id] = order_create(&stocks[0], new_id);
+                        add_order_to_book(&orderbooks[0], orders_array[new_id]);
+                        match_orders(&orderbooks[0], &user);
+                        break;
+                        case 2: orders_array[new_id] = order_create(&stocks[1], new_id);
+                        add_order_to_book(&orderbooks[1], orders_array[new_id]);
+                        match_orders(&orderbooks[1], &user);
+                        break;
+                        case 3: orders_array[new_id] = order_create(&stocks[2], new_id);
+                        add_order_to_book(&orderbooks[2], orders_array[new_id]);
+                        match_orders(&orderbooks[2], &user);
+                        break;
                         case 4: buy_quit = 1; break;
                         default: printf("Invalid choice\n");
                     }
@@ -52,11 +61,24 @@ int main(void) {
                 while (!sell_quit) {
                     display_sell_menu();
                     int sell_choice = get_user_input();
+                    int new_id = order_getID();
 
                     switch (sell_choice) {
-                        case 1: break;
-                        case 2: break;
-                        case 3: break;
+                        case 1: 
+                            orders_array[new_id] = order_create_sell(&stocks[0], new_id);
+                            add_order_to_book(&orderbooks[0], orders_array[new_id]);
+                            match_orders(&orderbooks[0], &user);
+                            break;
+                        case 2: 
+                            orders_array[new_id] = order_create_sell(&stocks[1], new_id);
+                            add_order_to_book(&orderbooks[1], orders_array[new_id]);
+                            match_orders(&orderbooks[1], &user);
+                            break;
+                        case 3: 
+                            orders_array[new_id] = order_create_sell(&stocks[2], new_id);
+                            add_order_to_book(&orderbooks[2], orders_array[new_id]);
+                            match_orders(&orderbooks[2], &user);
+                            break;
                         case 4: sell_quit = 1; break;
                         default: printf("Invalid choice\n");
                     }

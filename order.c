@@ -22,6 +22,31 @@ Order order_create(Stock* specific_stock, int id) {
     scanf("%lf", &quantity);
     order.quantity = quantity;
 
+    order.orderType = BUY_LIMIT;
+
+    return order;
+}
+
+Order order_create_sell(Stock* specific_stock, int id) {
+    Order order;
+    order.id = id;
+    order.ticker = specific_stock->ticker;
+
+    printf("\033[2J\033[H");
+    printf("\n\n== SELL ORDER MENU ==\n\n");
+    
+    printf("Enter desired price per share: ");
+    double price;
+    scanf("%lf", &price);
+    order.orderprice = price;
+
+    printf("\nEnter desired amount of shares to sell: ");
+    double quantity;
+    scanf("%lf", &quantity);
+    order.quantity = quantity;
+
+    order.orderType = SELL_LIMIT;
+
     return order;
 }
 
