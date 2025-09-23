@@ -5,14 +5,18 @@
 #include "user.h"
 #include "order.h"
 #include "orderbook.h"
+#include "bot.h"
 
 #define MAX_ORDERS 100
+#define MAX_BOTS 20
 
 int main(void) {
     User user = initialise_user();
     Stock stocks[3];
     initialise_stocks(stocks);
     Order orders_array[MAX_ORDERS];
+    Bot trading_bots[MAX_BOTS];
+    int num_active_bots;
 
     OrderBook orderbooks[3];
     for (int i = 0; i <= 3; i++) {
@@ -21,6 +25,8 @@ int main(void) {
         orderbooks[i].sell_count = 0;
         orderbooks[i].last_price = stocks[i].shareprice; // starts with stock price.
     }
+
+    initlialise_bots(trading_bots, num_active_bots);
     
     int quit = 0;
     
