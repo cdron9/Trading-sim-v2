@@ -29,3 +29,7 @@ TODO: refine order menus, properly handle user input and errors associated. hand
 current state - above + matching engine complete, user can create matching buy and sell orders that will manipualte user.cash; last orderprice stored as well.
 
 TODO: add support for partially filled order across multiple price points, CREATE ORDER COMPLETE SCREEN AND ORDERFILLED SCREEN - IMPORTANT. 
+
+current state - bot defs complete, bot functions need completing. 
+
+TODO: add support for partially filled orders, create order complete and orderfilled screen. write bot decision making funciton and index finder funciton. (prob need to study trading strategies for this).
