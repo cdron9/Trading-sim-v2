@@ -16,10 +16,45 @@ typedef enum {
     PORTFOLIO_MENU
 } ScreenState;
 
+typedef enum {
+    MOMENTUNM,      // buy rising sell falling
+    MEAN_REVERSION, // buy dip sell spike
+    SNIPER,         // patient limit orders close to fv
+    SCALPER,        // quick small trades
+    RANDOM          // day trading guru (liquidity provider lol)
+} TradingStrategy;
+
+typedef struct {
+    int bot_id;
+    double cash;
+    int holdings[3];
+
+    TradingStrategy strategy;
+
+    // risk profiling (randomised per bot) potentally range will differ based on strategy
+    double risk_tolerance;      // 0.1 = conservative, 0.8 = agro
+    double position_size_pct;   // % of cash willing to use per trade
+    double price_sensitivity;   // how much price movement triggers action
+
+    // timing
+    int cooldown_timer;         // ticks until can trade again
+    int decision_freq;          // how often bot considers trading
+} Bot;
+
 typedef struct {
     double shareprice;
     int quantity_available;
     char* ticker;
+
+    // market behaviour params
+    double volatility;          // 0.01 / 1% as typical price swing
+    double base_fair_value;     // what the bots consider fair price
+    double trend_strength;      // current momentum (-1 to +1)
+
+    // activity tracking
+    double revent_volume;       // for bots so interest can be gauged
+    double price_history[50];   // last 50 trade prices
+    int history_index;
 } Stock;
 
 typedef struct {
