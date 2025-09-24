@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "types.h"
 #include "orderbook.h"
+#include "order.h"
 
 void initialise_bots(Bot* bots, int count) {
     for (int i = 0; i < count; i++) {
@@ -28,7 +29,7 @@ void initialise_bots(Bot* bots, int count) {
 
 void run_bot_simulation_step(Bot* bots, int bot_count, Stock* stocks, OrderBook* books) {
     for (int i = 0; i < bot_count; i++) {
-        Order* bot_order = bot_make_decision(&bots[i], stocks, books); // logic to be written later, will be hefty and based on literally all data points.
+        Order* bot_order = bot_make_decision(&bots[i], bot_count, stocks, books); // logic to be written later, will be hefty and based on literally all data points.
 
         if (bot_order != NULL) {
             // send to correct orderbook
@@ -41,4 +42,36 @@ void run_bot_simulation_step(Bot* bots, int bot_count, Stock* stocks, OrderBook*
             free(bot_order);
         }
     }   
+}
+
+Order* bot_make_decision(Bot* bot, int bot_count, Stock* stocks, OrderBook* books) {
+   if (bot->cooldown_timer > 0) {
+    bot->cooldown_timer--;
+    return NULL; // bot cant act this tick
+   }
+
+   if (bot->strategy == MOMENTUM) {
+    return momentum_strategy(bot, stocks, books);
+   }
+   // other strategies cont
+}
+
+Order* momentum_strategy(Bot* bot, Stock* stocks, OrderBook* books) {
+    // select stock for analysis stand in for now at 0
+    Stock* target_stock = &stocks[0];
+
+    for (int stock_index = 0; stock_index < 3; stock_index++) {
+        if (target_stock->shareprice > target_stock->recent_avg) {
+            // price trending up -- create buy order
+            if (bot->cash > target_stock->shareprice * 10) {    // can afford least 10 shares
+                return order_create_bot_buy(bot, target_stock);
+            }
+        } else if (target_stock->shareprice < target_stock->recent_avg) {
+            // price trend down -- create sell order
+            if (bot->holdings[stock_index] > 0) {
+                return order_create_bot_sell(bot, target_stock); // number = stock index. 
+        }
+    }
+
+    return NULL; // no action this tick
 }

@@ -17,7 +17,7 @@ typedef enum {
 } ScreenState;
 
 typedef enum {
-    MOMENTUNM,      // buy rising sell falling
+    MOMENTUM,      // buy rising sell falling
     MEAN_REVERSION, // buy dip sell spike
     SNIPER,         // patient limit orders close to fv
     SCALPER,        // quick small trades
@@ -52,8 +52,9 @@ typedef struct {
     double trend_strength;      // current momentum (-1 to +1)
 
     // activity tracking
-    double revent_volume;       // for bots so interest can be gauged
+    double recent_volume;       // for bots so interest can be gauged
     double price_history[50];   // last 50 trade prices
+    double recent_avg;          // price history / amount of price points in history
     int history_index;
 } Stock;
 

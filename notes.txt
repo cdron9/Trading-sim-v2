@@ -33,3 +33,6 @@ TODO: add support for partially filled order across multiple price points, CREAT
 current state - bot defs complete, bot functions need completing. 
 
 TODO: add support for partially filled orders, create order complete and orderfilled screen. write bot decision making funciton and index finder funciton. (prob need to study trading strategies for this).
+            basic bot decision making model complete. simple momentum strategy also available to be used. 
+            bot order creation funcitons need writing  - how can the bot know what price and quanitity it wants for its order ??!!!.
+            
