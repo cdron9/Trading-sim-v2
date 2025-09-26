@@ -4,7 +4,7 @@
 #include "order.h"
 #include "ui.h"
 
-Order order_create(Stock* specific_stock, int id) {
+Order order_create_buy(Stock* specific_stock, int id) {
     Order order;
     order.id = id;
     order.ticker = specific_stock->ticker;

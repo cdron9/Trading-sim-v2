@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include "types.h"
 #include "orderbook.h"
 #include "order.h"
+#include "bot.h"
 
 void initialise_bots(Bot* bots, int count) {
     for (int i = 0; i < count; i++) {
@@ -29,22 +32,36 @@ void initialise_bots(Bot* bots, int count) {
 
 void run_bot_simulation_step(Bot* bots, int bot_count, Stock* stocks, OrderBook* books) {
     for (int i = 0; i < bot_count; i++) {
-        Order* bot_order = bot_make_decision(&bots[i], bot_count, stocks, books); // logic to be written later, will be hefty and based on literally all data points.
+        Order* bot_order = bot_make_decision(&bots[i], stocks, books);
 
         if (bot_order != NULL) {
-            // send to correct orderbook
-            int stock_index = find_stock_index(bot_order->ticker); // create fucntion for finding index. will be quite simple
-            add_order_to_book(&books[stock_index], *bot_order);
 
-            printf("Bot %d created order: %s %.0f shares of %s at $%.2f\n", i, (bot_order->orderType <= 1) ? "BUY" : "SELL",
-            bot_order->quantity, bot_order->ticker, bot_order->orderprice);
+            int stock_index = find_stock_index(bot_order->ticker);
+
+            if (stock_index >= 0) {  // valid ticker found
+                add_order_to_book(&books[stock_index], *bot_order);
+
+                printf("Bot %d created order: %s %.0f shares of %s at $%.2f\n", 
+                       i, (bot_order->orderType <= 1) ? "BUY" : "SELL",
+                       bot_order->quantity, bot_order->ticker, bot_order->orderprice);
+            } else {
+                printf("Error: Invalid ticker %s\n", bot_order->ticker);
+            }
 
             free(bot_order);
         }
     }   
 }
 
-Order* bot_make_decision(Bot* bot, int bot_count, Stock* stocks, OrderBook* books) {
+int find_stock_index(char* ticker) {
+    if (strcmp(ticker, "TECH") == 0) return 0;
+    if (strcmp(ticker, "GOIL") == 0) return 1;
+    if (strcmp(ticker, "FOOD") == 0) return 2;
+    
+    return -1;  // Invalid ticker
+}
+
+Order* bot_make_decision(Bot* bot, Stock* stocks, OrderBook* books) {
    if (bot->cooldown_timer > 0) {
     bot->cooldown_timer--;
     return NULL; // bot cant act this tick
@@ -54,24 +71,79 @@ Order* bot_make_decision(Bot* bot, int bot_count, Stock* stocks, OrderBook* book
     return momentum_strategy(bot, stocks, books);
    }
    // other strategies cont
+   return momentum_strategy(bot, stocks, books);
 }
 
 Order* momentum_strategy(Bot* bot, Stock* stocks, OrderBook* books) {
     // select stock for analysis stand in for now at 0
-    Stock* target_stock = &stocks[0];
+    Stock* target_stock = stocks;
 
     for (int stock_index = 0; stock_index < 3; stock_index++) {
         if (target_stock->shareprice > target_stock->recent_avg) {
             // price trending up -- create buy order
             if (bot->cash > target_stock->shareprice * 10) {    // can afford least 10 shares
-                return order_create_bot_buy(bot, target_stock);
+                return bot_create_buy_order(bot, target_stock);
             }
         } else if (target_stock->shareprice < target_stock->recent_avg) {
             // price trend down -- create sell order
             if (bot->holdings[stock_index] > 0) {
-                return order_create_bot_sell(bot, target_stock); // number = stock index. 
+                return bot_create_sell_order(bot, target_stock); // number = stock index. 
+            }
         }
     }
 
     return NULL; // no action this tick
+}
+
+double bot_calculate_order_quantity(Bot* bot, Stock* stock) {
+    // base on bots risk profile and availablce cash
+    double max_affordable = bot->cash / stock->shareprice;
+    double desired_pos = max_affordable * bot->risk_tolerance;  // should set as 5 - 25% of max available
+
+    double quantity = desired_pos * (0.5 +(rand() % 100) / 100.0);  // 50 - 150% of desired amount for randomness
+
+    return fmax(1, fmin(quantity, 100)); // min 1 share max 100
+}
+
+double bot_calculate_buy_price(Bot* bot, Stock* stock) {
+    if (bot->strategy == MOMENTUM && stock->shareprice > stock->recent_avg) {
+        double premium = stock->volatility * bot->risk_tolerance;
+        return stock->shareprice * (1.0 + premium);
+    }
+
+    return stock->shareprice * (1.0 - stock->volatility * 0.5);
+}
+
+double bot_calcualte_sell_price(Bot* bot, Stock* stock) {
+    if (bot->strategy == MOMENTUM && stock->shareprice < stock->recent_avg) {
+        // panic sell and accept discount
+        double discount = stock->volatility * bot->risk_tolerance;
+        return stock->shareprice * (1.0 - discount);
+    }
+
+    return stock->shareprice * (1.0 + stock->volatility * 0.5);
+}
+
+Order* bot_create_buy_order(Bot* bot, Stock* stock) {
+    Order* order = malloc(sizeof(Order));
+
+    order->ticker = stock->ticker;
+    order->orderType = BUY_LIMIT;
+    order->quantity = bot_calculate_order_quantity(bot, stock);
+    order->orderprice = bot_calculate_buy_price(bot, stock);
+
+
+    return order;
+}
+
+Order* bot_create_sell_order(Bot* bot, Stock* stock) {
+    Order* order = malloc(sizeof(Order));
+
+    order->ticker = stock->ticker;
+    order->orderType = SELL_LIMIT;
+    order->quantity = bot_calculate_order_quantity(bot, stock);
+    order->orderprice = bot_calcualte_sell_price(bot, stock);
+    
+
+    return order;
 }

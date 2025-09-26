@@ -16,17 +16,17 @@ int main(void) {
     initialise_stocks(stocks);
     Order orders_array[MAX_ORDERS];
     Bot trading_bots[MAX_BOTS];
-    int num_active_bots;
+    int num_active_bots = 10;
 
     OrderBook orderbooks[3];
-    for (int i = 0; i <= 3; i++) {
+    for (int i = 0; i < 3; i++) {
         orderbooks[i].ticker = stocks[i].ticker;
         orderbooks[i].buy_count = 0;
         orderbooks[i].sell_count = 0;
         orderbooks[i].last_price = stocks[i].shareprice; // starts with stock price.
     }
 
-    initlialise_bots(trading_bots, num_active_bots);
+    initialise_bots(trading_bots, num_active_bots);
     
     int quit = 0;
     
@@ -43,15 +43,21 @@ int main(void) {
                     int new_id = order_getID();
                     
                     switch (buy_choice) {
-                        case 1: orders_array[new_id] = order_create_buy(&stocks[0], new_id);
+                        case 1: { Order new_order = order_create_buy(&stocks[0], new_id);
+                        orders_array[new_id] = new_order;
                         add_order_to_book(&orderbooks[0], orders_array[new_id]);
                         break;
-                        case 2: orders_array[new_id] = order_create_buy(&stocks[1], new_id);
+                        }
+                        case 2: { Order new_order = order_create_buy(&stocks[1], new_id);
+                        orders_array[new_id] = new_order;
                         add_order_to_book(&orderbooks[1], orders_array[new_id]);
                         break;
-                        case 3: orders_array[new_id] = order_create_buy(&stocks[2], new_id);
+                        }
+                        case 3: { Order new_order = order_create_buy(&stocks[2], new_id);
+                        orders_array[new_id] = new_order;
                         add_order_to_book(&orderbooks[2], orders_array[new_id]);
                         break;
+                        }
                         case 4: buy_quit = 1; break;
                         default: printf("Invalid choice\n");
                     }
@@ -114,7 +120,7 @@ int main(void) {
         // run bots every tick (or as desired)
         run_bot_simulation_step(trading_bots, num_active_bots, stocks, orderbooks);
 
-        // process all orderbook mathcing at once 
+        // process all orderbook matching at once 
         for (int i = 0; i < 3; i++) {
             match_orders(&orderbooks[i], &user); // shoudl match pending bot orders asw
         }
