@@ -5,7 +5,8 @@
 void initialise_bots(Bot* bots, int count);
 void run_bot_simulation_step(Bot* bots, int bot_count, Stock* stock, OrderBook* books);
 Order* bot_make_decision(Bot *bots, Stock* stocks, OrderBook* books);
-int find_stock_index(char* ticker);
+int find_stock_index(const char* ticker);
+
 // order creation 
 Order* bot_create_buy_order(Bot* bot, Stock* stock);
 Order* bot_create_sell_order(Bot* bot, Stock* stock);

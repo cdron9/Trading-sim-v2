@@ -23,12 +23,15 @@ void initialise_bots(Bot* bots, int count) {
         bots[i].cooldown_timer = 0;
         bots[i].decision_freq = 5 + rand() % 15;    // 5-20 ticks
 
-        // make holdings empty
-        for (int j = 0; j < 3; j++) {
-            bots[i].holdings[j] = 0;
+        // assign 33% of bots holdings randomly
+        if (rand() % 3 == 0) {
+            for (int j = 0; j < 3; j++) {
+                bots[i].holdings[j] = rand() % 20;
+            }
         }
     }
 }
+
 
 void run_bot_simulation_step(Bot* bots, int bot_count, Stock* stocks, OrderBook* books) {
     for (int i = 0; i < bot_count; i++) {
@@ -53,7 +56,7 @@ void run_bot_simulation_step(Bot* bots, int bot_count, Stock* stocks, OrderBook*
     }   
 }
 
-int find_stock_index(char* ticker) {
+int find_stock_index(const char* ticker) {
     if (strcmp(ticker, "TECH") == 0) return 0;
     if (strcmp(ticker, "GOIL") == 0) return 1;
     if (strcmp(ticker, "FOOD") == 0) return 2;
@@ -96,25 +99,25 @@ Order* momentum_strategy(Bot* bot, Stock* stocks, OrderBook* books) {
 }
 
 double bot_calculate_order_quantity(Bot* bot, Stock* stock) {
-    // base on bots risk profile and availablce cash
-    double max_affordable = bot->cash / stock->shareprice;
-    double desired_pos = max_affordable * bot->risk_tolerance;  // should set as 5 - 25% of max available
+    // redo using psitionsizepct which varies between bots
+    double base_quantity = (bot->cash * bot->position_size_pct) / stock->shareprice;
 
-    double quantity = desired_pos * (0.5 +(rand() % 100) / 100.0);  // 50 - 150% of desired amount for randomness
+    // add risk tolerance for additional variance and accuracy
+    double risk_multiplier = 0.5 + bot->risk_tolerance;
 
-    return fmax(1, fmin(quantity, 100)); // min 1 share max 100
+    return fmax(1, base_quantity * risk_multiplier);
 }
 
 double bot_calculate_buy_price(Bot* bot, Stock* stock) {
-    if (bot->strategy == MOMENTUM && stock->shareprice > stock->recent_avg) {
-        double premium = stock->volatility * bot->risk_tolerance;
-        return stock->shareprice * (1.0 + premium);
-    }
+    double base_price = stock->shareprice;
 
-    return stock->shareprice * (1.0 - stock->volatility * 0.5);
+    double price_variance = stock->volatility * bot->risk_tolerance;
+    double random_factor = (rand() % 100 - 50) / 1000.0; // -0.05 - +0.05.
+
+    return base_price * (1.0 + price_variance + random_factor);
 }
 
-double bot_calcualte_sell_price(Bot* bot, Stock* stock) {
+double bot_calculate_sell_price(Bot* bot, Stock* stock) {
     if (bot->strategy == MOMENTUM && stock->shareprice < stock->recent_avg) {
         // panic sell and accept discount
         double discount = stock->volatility * bot->risk_tolerance;
@@ -126,24 +129,20 @@ double bot_calcualte_sell_price(Bot* bot, Stock* stock) {
 
 Order* bot_create_buy_order(Bot* bot, Stock* stock) {
     Order* order = malloc(sizeof(Order));
-
+    order->id = -1; // Mark as bot order
     order->ticker = stock->ticker;
     order->orderType = BUY_LIMIT;
     order->quantity = bot_calculate_order_quantity(bot, stock);
     order->orderprice = bot_calculate_buy_price(bot, stock);
-
-
     return order;
 }
 
 Order* bot_create_sell_order(Bot* bot, Stock* stock) {
     Order* order = malloc(sizeof(Order));
-
+    order->id = -1; // Mark as bot order
     order->ticker = stock->ticker;
     order->orderType = SELL_LIMIT;
     order->quantity = bot_calculate_order_quantity(bot, stock);
-    order->orderprice = bot_calcualte_sell_price(bot, stock);
-    
-
+    order->orderprice = bot_calculate_sell_price(bot, stock);
     return order;
 }

@@ -6,10 +6,10 @@
 void add_order_to_book(OrderBook* book, Order order);
 
 // try to match and execute trades
-void match_orders(OrderBook* book, User* user);
+void match_orders(Stock* stock, OrderBook* book, User* user);
 
 // execute single trade when orders match
-void execute_trade(Order* buy_order, Order* sell_order, OrderBook* book, User* user);
+void execute_trade(Stock* stock, Order* buy_order, Order* sell_order, OrderBook* book, User* user);
 
 void sort_buy_orders(OrderBook* book);
 

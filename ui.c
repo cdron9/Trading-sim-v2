@@ -36,13 +36,30 @@ void display_buy_menu() {
     printf("\n4. BACK\n");
 }
 
+
 void display_portfolio_menu(User* user) {
     printf("\033[2J\033[H");
     printf("\n\n== PORTFOLIO ==\n\n");
     printf("User cash: $%.2f\n\n", user->cash);
     printf("User holdings:\n");
-    // Display holdings logic here
+    for (int i = 0; i < 3; i++) {
+        Stock* s = &user->holdings[i];
+        printf("%s: Quantity: %.0f, Avg Price: $%.2f\n", s->ticker, s->user_quantity, s->order_price);
+    }
     printf("\n1. BACK\n");
+}
+
+void display_order_accepted(const Order* order) {
+    printf("\033[2J\033[H");
+    printf("\n\n== ORDER ACCEPTED ==\n\n");
+    printf("Order for %s accepted!\n", order->ticker);
+    printf("Type: %s\n", (order->orderType == BUY_LIMIT || order->orderType == BUY_MARKET) ? "BUY" : "SELL");
+    printf("Quantity: %.0f\n", order->quantity);
+    printf("Price: $%.2f\n", order->orderprice);
+    printf("\nPress ENTER to continue...\n");
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {} // flush leftover input
+    getchar();
 }
 
 int get_user_input(void) {

@@ -56,10 +56,16 @@ typedef struct {
     double price_history[50];   // last 50 trade prices
     double recent_avg;          // price history / amount of price points in history
     int history_index;
+    int history_count;
+
+    // user holdings vals
+    double user_quantity;
+    double order_price;
 } Stock;
 
 typedef struct {
     double cash;
+    Stock holdings[3];
 } User;
 
 typedef struct {

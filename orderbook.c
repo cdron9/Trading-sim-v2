@@ -1,11 +1,18 @@
+#include <stdio.h>
 #include "types.h"
 #include "orderbook.h"
+#include "stocks.h"
+#include "bot.h"
 
 #include <stdio.h>
 
 #define MAX_ORDERS 100
 
+
 void add_order_to_book(OrderBook* book, Order order) {
+    printf("[DEBUG] Adding order: %s %s %.0f @ $%.2f (id=%d)\n", 
+        (order.orderType == BUY_LIMIT || order.orderType == BUY_MARKET) ? "BUY" : "SELL", 
+        order.ticker, order.quantity, order.orderprice, order.id);
     if (order.orderType == BUY_LIMIT || order.orderType == BUY_MARKET) {
         // add to end of array
         book->buy_orders[book->buy_count] = order;
@@ -67,11 +74,12 @@ int can_orders_match(Order* buy, Order* sell) {
     return 0; // no match
 }
 
-void execute_trade(Order* buy, Order* sell, OrderBook* book, User* user) {
+void execute_trade(Stock* stock, Order* buy, Order* sell, OrderBook* book, User* user) {
     double trade_quantity = (buy->quantity < sell->quantity) ?
                             buy->quantity : sell->quantity;
 
     double trade_price = sell->orderprice; // seller was there first
+    printf("[DEBUG] Executing trade: BUY id=%d, SELL id=%d, qty=%.0f, price=%.2f\n", buy->id, sell->id, trade_quantity, trade_price);
 
     printf("TRADE: %.0f shares at $%.2f\n", trade_quantity, trade_price);
 
@@ -83,25 +91,53 @@ void execute_trade(Order* buy, Order* sell, OrderBook* book, User* user) {
     // track last price
     book->last_price = trade_price;
 
-    // update user account
-    user->cash -= (trade_quantity * trade_price);
+    int stock_index = find_stock_index(book->ticker);
+    printf("[DEBUG] Stock index for %s: %d\n", book->ticker, stock_index);
+    // Only update user if the order has a valid user order ID (>= 0)
+    if (user != NULL) {
+        // User is buyer
+        if (buy->id >= 0) {
+            printf("[DEBUG] User is BUYER. Before: cash=%.2f, qty=%.2f, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, user->holdings[stock_index].order_price);
+            user->cash -= (trade_quantity * trade_price);
+            user->holdings[stock_index].user_quantity += trade_quantity;
+            user->holdings[stock_index].order_price += trade_price;
+            printf("[DEBUG] User is BUYER. After: cash=%.2f, qty=%.2f, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, user->holdings[stock_index].order_price);
+        }
+        // User is seller
+        if (sell->id >= 0) {
+            printf("[DEBUG] User is SELLER. Before: cash=%.2f, qty=%.2f, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, user->holdings[stock_index].order_price);
+            user->cash += (trade_quantity * trade_price);
+            user->holdings[stock_index].user_quantity -= trade_quantity;
+            user->holdings[stock_index].order_price -= trade_price;
+            printf("[DEBUG] User is SELLER. After: cash=%.2f, qty=%.2f, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, user->holdings[stock_index].order_price);
+        }
+    }
 }
 
 //matching engine
-void match_orders(OrderBook* book, User* user) {
-    // Need least one buy and one sel
-    if (book->buy_count == 0 || book->sell_count == 0) {
-        return; // no matching possible
-    }
-
-    // get best orders from index 0 post sort
-    Order* best_buy = &book->buy_orders[0];     // highest price buyer
-    Order* best_sell = &book->sell_orders[0];   // Lowest price seller
-
-    // check if can match 
-    if (can_orders_match(best_buy, best_sell)) {
-        execute_trade(best_buy, best_sell, book, user);
-        // TODO: handle partially filled orders
-        // TODO: remove fully filled orders
+void match_orders(Stock* stock, OrderBook* book, User* user) {
+    // Keep matching as long as possible
+    while (book->buy_count > 0 && book->sell_count > 0) {
+        Order* best_buy = &book->buy_orders[0];
+        Order* best_sell = &book->sell_orders[0];
+        if (!can_orders_match(best_buy, best_sell)) {
+            break;
+        }
+        execute_trade(stock, best_buy, best_sell, book, user);
+        // Support for partially filled orders:
+        // Only remove an order if its quantity is now <= 0 (fully filled).
+        if (best_buy->quantity <= 0) {
+            for (int i = 0; i < book->buy_count - 1; i++) {
+                book->buy_orders[i] = book->buy_orders[i + 1];
+            }
+            book->buy_count--;
+        }
+        if (best_sell->quantity <= 0) {
+            for (int i = 0; i < book->sell_count - 1; i++) {
+                book->sell_orders[i] = book->sell_orders[i + 1];
+            }
+            book->sell_count--;
+        }
+        // If either order was only partially filled, it remains at the front of the book for the next match.
     }
 }
