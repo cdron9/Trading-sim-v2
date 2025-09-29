@@ -44,9 +44,9 @@ void run_bot_simulation_step(Bot* bots, int bot_count, Stock* stocks, OrderBook*
             if (stock_index >= 0) {  // valid ticker found
                 add_order_to_book(&books[stock_index], *bot_order);
 
-                printf("Bot %d created order: %s %.0f shares of %s at $%.2f\n", 
-                       i, (bot_order->orderType <= 1) ? "BUY" : "SELL",
-                       bot_order->quantity, bot_order->ticker, bot_order->orderprice);
+          printf("Bot %d created order: %s %.0f shares of %s at $%.2f\n", 
+              i, (bot_order->orderType <= 1) ? "BUY" : "SELL",
+              bot_order->quantity, bot_order->ticker, bot_order->orderprice);
             } else {
                 printf("Error: Invalid ticker %s\n", bot_order->ticker);
             }
@@ -70,31 +70,45 @@ Order* bot_make_decision(Bot* bot, Stock* stocks, OrderBook* books) {
     return NULL; // bot cant act this tick
    }
 
-   if (bot->strategy == MOMENTUM) {
-    return momentum_strategy(bot, stocks, books);
+   switch (bot->strategy) {
+       case MOMENTUM:
+           return momentum_strategy(bot, stocks, books);
+       case RANDOM:
+           return random_strategy(bot, stocks, books);
+       // TODO: add other strategies here
+       default:
+           return momentum_strategy(bot, stocks, books);
    }
-   // other strategies cont
-   return momentum_strategy(bot, stocks, books);
 }
 
-Order* momentum_strategy(Bot* bot, Stock* stocks, OrderBook* books) {
-    // select stock for analysis stand in for now at 0
-    Stock* target_stock = stocks;
 
+Order* random_strategy(Bot* bot, Stock* stocks, OrderBook* books) {
+    int stock_index = rand() % 3;
+    Stock* s = &stocks[stock_index];
+    int action = rand() % 2; // 0 = buy, 1 = sell
+    if (action == 0 && bot->cash > s->shareprice * 2) {
+        return bot_create_buy_order(bot, s);
+    } else if (action == 1 && bot->holdings[stock_index] > 0) {
+        return bot_create_sell_order(bot, s);
+    }
+    return NULL;
+}
+
+
+Order* momentum_strategy(Bot* bot, Stock* stocks, OrderBook* books) {
     for (int stock_index = 0; stock_index < 3; stock_index++) {
-        if (target_stock->shareprice > target_stock->recent_avg) {
-            // price trending up -- create buy order
-            if (bot->cash > target_stock->shareprice * 10) {    // can afford least 10 shares
-                return bot_create_buy_order(bot, target_stock);
-            }
-        } else if (target_stock->shareprice < target_stock->recent_avg) {
-            // price trend down -- create sell order
-            if (bot->holdings[stock_index] > 0) {
-                return bot_create_sell_order(bot, target_stock); // number = stock index. 
-            }
+        Stock* s = &stocks[stock_index];
+
+        // buy if strong positive trend and enough cash
+        if (s->trend_strength > 0.3 && bot->cash > s->shareprice * 5) {
+            return bot_create_buy_order(bot, s);
+        }
+
+        // sell if strong negative trend and holdings exist
+        if (s->trend_strength < -0.3 && bot->holdings[stock_index] > 0) {
+            return bot_create_sell_order(bot, s);
         }
     }
-
     return NULL; // no action this tick
 }
 

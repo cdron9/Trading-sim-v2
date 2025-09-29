@@ -39,4 +39,15 @@ TODO: add support for partially filled orders, create order complete and orderfi
 current state - getting bots to create buy orders
 
 TODO: above + create recent_avg value and price history for more accuracy in bots, continue with more strategies. 
-                QUESITON: all bots where trading different quantities at the same price. why is this, they are all on same strat at the moment but should still have varience due to personality trait values. 
+                QUESITON: all bots where trading different quantities at the same price. why is this, they are all on same strat at the moment but should still have varience due to personality trait values.
+                
+
+current state - working simulator
+
+TODO: make super clear to user what is going on behind the scenes. want to avoid multithreading and so therefore needs to remain a tick by tick program. need to find a way to display to user what current order status is 
+
+        -- also, create order cancel function. add return to main menu button when creatying order that cancels any order in progress etc. 
+        -- make sure orders do not build up in the book when user enters multiple sell/buy (or make clear to user that orders are not filled because not amtching order is yet avaialable)
+        -- show user current order status. i.e. filled, waiting to be filled. (potentially and order filled not screen so user is made aware when order is filled) -- can do this with flags for bool values attrivuted to order status, need to ass order status. 
+
+        

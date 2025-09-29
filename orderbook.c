@@ -28,6 +28,16 @@ void add_order_to_book(OrderBook* book, Order order) {
 
         sort_sell_orders(book);
     }
+
+    // Debug: print orderbook state after adding
+    printf("[DEBUG] Orderbook after add (BUY):\n");
+    for (int i = 0; i < book->buy_count; i++) {
+        printf("  BUY %s %.0f @ $%.2f (id=%d)\n", book->buy_orders[i].ticker, book->buy_orders[i].quantity, book->buy_orders[i].orderprice, book->buy_orders[i].id);
+    }
+    printf("[DEBUG] Orderbook after add (SELL):\n");
+    for (int i = 0; i < book->sell_count; i++) {
+        printf("  SELL %s %.0f @ $%.2f (id=%d)\n", book->sell_orders[i].ticker, book->sell_orders[i].quantity, book->sell_orders[i].orderprice, book->sell_orders[i].id);
+    }
 }
 
 // sorted in descending order, lowest (best) prices indexed from 0 up.
@@ -97,25 +107,43 @@ void execute_trade(Stock* stock, Order* buy, Order* sell, OrderBook* book, User*
     if (user != NULL) {
         // User is buyer
         if (buy->id >= 0) {
-            printf("[DEBUG] User is BUYER. Before: cash=%.2f, qty=%.2f, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, user->holdings[stock_index].order_price);
+            float avg_price = (user->holdings[stock_index].user_quantity > 0) ? (user->holdings[stock_index].total_cost / user->holdings[stock_index].user_quantity) : 0.0f;
+            printf("[DEBUG] User is BUYER. Before: cash=%.2f, qty=%u, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, avg_price);
             user->cash -= (trade_quantity * trade_price);
             user->holdings[stock_index].user_quantity += trade_quantity;
-            user->holdings[stock_index].order_price += trade_price;
-            printf("[DEBUG] User is BUYER. After: cash=%.2f, qty=%.2f, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, user->holdings[stock_index].order_price);
+            user->holdings[stock_index].total_cost += trade_quantity * trade_price;
+            avg_price = (user->holdings[stock_index].user_quantity > 0) ? (user->holdings[stock_index].total_cost / user->holdings[stock_index].user_quantity) : 0.0f;
+            printf("[DEBUG] User is BUYER. After: cash=%.2f, qty=%u, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, avg_price);
         }
         // User is seller
         if (sell->id >= 0) {
-            printf("[DEBUG] User is SELLER. Before: cash=%.2f, qty=%.2f, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, user->holdings[stock_index].order_price);
+            float avg_price = (user->holdings[stock_index].user_quantity > 0) ? (user->holdings[stock_index].total_cost / user->holdings[stock_index].user_quantity) : 0.0f;
+            printf("[DEBUG] User is SELLER. Before: cash=%.2f, qty=%u, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, avg_price);
             user->cash += (trade_quantity * trade_price);
             user->holdings[stock_index].user_quantity -= trade_quantity;
-            user->holdings[stock_index].order_price -= trade_price;
-            printf("[DEBUG] User is SELLER. After: cash=%.2f, qty=%.2f, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, user->holdings[stock_index].order_price);
+            user->holdings[stock_index].total_cost -= avg_price * trade_quantity;
+            avg_price = (user->holdings[stock_index].user_quantity > 0) ? (user->holdings[stock_index].total_cost / user->holdings[stock_index].user_quantity) : 0.0f;
+            printf("[DEBUG] User is SELLER. After: cash=%.2f, qty=%u, avg=%.2f\n", user->cash, user->holdings[stock_index].user_quantity, avg_price);
         }
     }
+    // update stock price history
+    update_price_history(stock, trade_price);
+    // update trend strength
+    stock->trend_strength = (stock->shareprice - stock->recent_avg) / stock->recent_avg;
 }
 
 //matching engine
 void match_orders(Stock* stock, OrderBook* book, User* user) {
+    // Debug: print orderbook state before matching
+    printf("[DEBUG] Orderbook before matching (BUY):\n");
+    for (int i = 0; i < book->buy_count; i++) {
+        printf("  BUY %s %.0f @ $%.2f (id=%d)\n", book->buy_orders[i].ticker, book->buy_orders[i].quantity, book->buy_orders[i].orderprice, book->buy_orders[i].id);
+    }
+    printf("[DEBUG] Orderbook before matching (SELL):\n");
+    for (int i = 0; i < book->sell_count; i++) {
+        printf("  SELL %s %.0f @ $%.2f (id=%d)\n", book->sell_orders[i].ticker, book->sell_orders[i].quantity, book->sell_orders[i].orderprice, book->sell_orders[i].id);
+    }
+
     // Keep matching as long as possible
     while (book->buy_count > 0 && book->sell_count > 0) {
         Order* best_buy = &book->buy_orders[0];

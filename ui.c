@@ -7,13 +7,22 @@
 #include <string.h>
 #include <stdlib.h>
 
-void display_main_menu() {
+void display_main_menu(Stock* stocks, User* user) {
     printf("\033[2J\033[H");
     printf("\n\n== MAIN MENU ==\n\n");
     printf("1. Create BUY order\n");
     printf("2. Create SELL order\n");
     printf("3. Show portfolio\n");
     printf("\n4. QUIT\n");
+
+    // Display user cash and holdings summary
+    printf("\nYour cash: $%.2f\n", user->cash);
+
+    printf("\n== Current stock prices ==\n");
+    for (int i = 0; i < 3; i++) {
+        Stock* s = &stocks[i];
+        printf("%s: $%.2f\n", s->ticker, s->shareprice);
+    }
 }
 
 void display_sell_menu() {
@@ -26,7 +35,7 @@ void display_sell_menu() {
     printf("\n4. BACK\n");
 }
 
-void display_buy_menu() {
+void display_buy_menu(User* user) {
     printf("\033[2J\033[H");
     printf("\n\n== BUY MENU ==\n\n");
     printf("Select a stock.\n\n");
@@ -34,6 +43,9 @@ void display_buy_menu() {
     printf("2. GOIL\n");
     printf("3. FOOD\n");
     printf("\n4. BACK\n");
+
+    // show user cash
+    printf("Your cash: $%.2f\n", user->cash);
 }
 
 
@@ -44,7 +56,8 @@ void display_portfolio_menu(User* user) {
     printf("User holdings:\n");
     for (int i = 0; i < 3; i++) {
         Stock* s = &user->holdings[i];
-        printf("%s: Quantity: %.0f, Avg Price: $%.2f\n", s->ticker, s->user_quantity, s->order_price);
+        float avg_price = (s->user_quantity > 0) ? (s->total_cost / s->user_quantity) : 0.0f;
+        printf("%s: Quantity: %u, Avg Price: $%.2f\n", s->ticker, s->user_quantity, avg_price);
     }
     printf("\n1. BACK\n");
 }

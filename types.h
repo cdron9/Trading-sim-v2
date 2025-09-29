@@ -43,24 +43,25 @@ typedef struct {
 
 typedef struct {
     double shareprice;
-    int quantity_available;
+    unsigned int quantity_available;
     char* ticker;
 
     // market behaviour params
-    double volatility;          // 0.01 / 1% as typical price swing
-    double base_fair_value;     // what the bots consider fair price
-    double trend_strength;      // current momentum (-1 to +1)
+    float volatility;           // 0.01 / 1% as typical price swing
+    float base_fair_value;      // what the bots consider fair price
+    float current_fair_value;   // drifts over time
+    float trend_strength;       // current momentum (-1 to +1)
 
     // activity tracking
-    double recent_volume;       // for bots so interest can be gauged
-    double price_history[50];   // last 50 trade prices
-    double recent_avg;          // price history / amount of price points in history
-    int history_index;
-    int history_count;
+    float recent_volume;        // for bots so interest can be gauged
+    float price_history[50];    // last 50 trade prices
+    float recent_avg;           // price history / amount of price points in history
+    unsigned char history_index;
+    unsigned char history_count;
 
     // user holdings vals
-    double user_quantity;
-    double order_price;
+    unsigned int user_quantity;
+    float total_cost;
 } Stock;
 
 typedef struct {

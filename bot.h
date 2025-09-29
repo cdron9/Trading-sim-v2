@@ -17,6 +17,7 @@ double bot_calculate_sell_price(Bot* bot, Stock* stock);
 
 // strategy logic
 Order* momentum_strategy(Bot* bot, Stock* stocks, OrderBook* books);
+Order* random_strategy(Bot* bot, Stock* stocks, OrderBook* books);
 
 
 

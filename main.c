@@ -31,14 +31,14 @@ int main(void) {
     int quit = 0;
     
     while (!quit) {
-        display_main_menu();
+        display_main_menu(stocks, &user);
         int main_choice = get_user_input();
         
         switch (main_choice) { 
             case 1: {   // buy menu
                 int buy_quit = 0;
                 while (!buy_quit) {
-                    display_buy_menu();
+                    display_buy_menu(&user);
                     int buy_choice = get_user_input();
                     int new_id = order_getID();
                     
